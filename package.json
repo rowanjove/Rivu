@@ -1,0 +1,122 @@
+{
+  "name": "rivu",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Rivu contributors",
+  "description": "A local-first desktop RSS reader for Windows",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && npm run electron:build && electron .\"",
+    "build": "node scripts/create-build-info.mjs && tsc --noEmit && vite build && npm run electron:build",
+    "electron:build": "node scripts/create-build-info.mjs && esbuild electron/main.ts --bundle --platform=node --format=cjs --external:electron --external:fastify --external:rss-parser --external:jsdom --outfile=dist-electron/main.cjs && esbuild electron/preload.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist-electron/preload.cjs && esbuild server/maintenance-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/maintenance-worker.cjs && esbuild server/database.ts --bundle --platform=node --format=cjs --external:jsdom --outfile=dist-electron/startup-database.cjs && esbuild electron/startup-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/startup-worker.cjs && esbuild server/feed-parse-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/feed-parse-worker.cjs && esbuild server/feed-parse-task.ts --bundle --platform=node --format=cjs --external:jsdom --external:rss-parser --outfile=dist-electron/feed-parse-task.cjs && esbuild server/feed-write-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/feed-write-worker.cjs && esbuild server/feed-write-task.ts --bundle --platform=node --format=cjs --external:jsdom --outfile=dist-electron/feed-write-task.cjs && esbuild server/archive-export-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/archive-export-worker.cjs && esbuild server/archive-export-task.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-electron/archive-export-task.cjs && esbuild server/archive-read-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/archive-read-worker.cjs && esbuild server/archive-read-task.ts --bundle --platform=node --format=cjs --outfile=dist-electron/archive-read-task.cjs && esbuild server/ai-scan-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/ai-scan-worker.cjs && esbuild server/ai-scan-task.ts --bundle --platform=node --format=cjs --outfile=dist-electron/ai-scan-task.cjs && esbuild server/entry-read-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/entry-read-worker.cjs && esbuild server/entry-read-task.ts --bundle --platform=node --format=cjs --external:jsdom --outfile=dist-electron/entry-read-task.cjs && esbuild server/image-url-task.ts --bundle --platform=node --format=cjs --outfile=dist-electron/image-url-task.cjs && esbuild server/backup-inspection-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/backup-inspection-worker.cjs && esbuild server/backup-inspection-task.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-electron/backup-inspection-task.cjs",
+    "server:build": "esbuild server/unread-counts.ts server/raw-unread-projection.ts server/search-rowid-projection.ts server/search-posting-bits.ts server/stable-storage.ts server/service.ts server/ai.ts server/ai-provider-response.ts server/archive-write.ts server/archive-saver.ts server/network.ts server/image-cache.ts server/fulltext.ts server/offline.ts server/source-adapter.ts server/custom-json.ts server/opml.ts server/backup.ts server/feeds.ts server/newsletter.ts server/archive.ts server/auto-backup.ts server/maintenance.ts server/local-logs.ts server/reading-settings.ts --bundle --platform=node --format=esm --packages=external --outdir=dist-server && esbuild server/database.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-server/database.cjs && esbuild server/maintenance-worker.ts --bundle --platform=node --format=cjs --outfile=dist-server/maintenance-worker.cjs && esbuild src/source-icon-cache.ts --bundle --platform=node --format=esm --outfile=dist-server/source-icon-cache.js && esbuild server/feed-parse-worker.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-server/feed-parse-worker.cjs && esbuild server/feed-parse-task.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-server/feed-parse-task.cjs && esbuild server/feed-parser.ts --bundle --platform=node --format=esm --packages=external --outfile=dist-server/feed-parser.js && esbuild server/feed-write-worker.ts --bundle --platform=node --format=cjs --outfile=dist-server/feed-write-worker.cjs && esbuild server/feed-write-task.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-server/feed-write-task.cjs && esbuild server/feed-writer.ts --bundle --platform=node --format=esm --packages=external --outfile=dist-server/feed-writer.js && esbuild server/write-coordinator.ts --bundle --platform=node --format=esm --outfile=dist-server/write-coordinator.js && esbuild server/archive-exporter.ts --bundle --platform=node --format=esm --packages=external --outfile=dist-server/archive-exporter.js && esbuild server/archive-export-worker.ts --bundle --platform=node --format=cjs --outfile=dist-server/archive-export-worker.cjs && esbuild server/archive-export-task.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-server/archive-export-task.cjs && esbuild server/archive-read-worker.ts --bundle --platform=node --format=cjs --outfile=dist-server/archive-read-worker.cjs && esbuild server/archive-read-task.ts --bundle --platform=node --format=cjs --outfile=dist-server/archive-read-task.cjs && esbuild server/archive-reader.ts --bundle --platform=node --format=esm --outfile=dist-server/archive-reader.js && esbuild server/ai-scan-worker.ts --bundle --platform=node --format=cjs --outfile=dist-server/ai-scan-worker.cjs && esbuild server/ai-scan-task.ts --bundle --platform=node --format=cjs --outfile=dist-server/ai-scan-task.cjs && esbuild server/ai-scanner.ts --bundle --platform=node --format=esm --outfile=dist-server/ai-scanner.js && esbuild server/ai-rules.ts --bundle --platform=node --format=esm --packages=external --outfile=dist-server/ai-rules.js && esbuild server/entry-reader.ts --bundle --platform=node --format=esm --outfile=dist-server/entry-reader.js && esbuild server/entry-read-worker.ts --bundle --platform=node --format=cjs --outfile=dist-server/entry-read-worker.cjs && esbuild server/entry-read-task.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-server/entry-read-task.cjs && esbuild server/image-url-task.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-server/image-url-task.cjs && esbuild electron/backup-inspection.ts --bundle --platform=node --format=esm --outfile=dist-server/backup-inspection.js && esbuild server/backup-inspection-worker.ts --bundle --platform=node --format=cjs --outfile=dist-server/backup-inspection-worker.cjs && esbuild server/backup-inspection-task.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist-server/backup-inspection-task.cjs && esbuild electron/backup-restore-session.ts --bundle --platform=node --format=esm --outfile=dist-server/backup-restore-session.js",
+    "test": "npm run server:build && node --test --test-concurrency=4 tests/*.test.mjs",
+    "test:performance": "npm run server:build && node scripts/performance-smoke.mjs",
+    "test:scale": "npm run server:build && node scripts/scale-smoke.mjs",
+    "test:historical:fixture": "npm run server:build && node scripts/historical-fixture-validation.mjs",
+    "test:desktop": "node tests/desktop-smoke.mjs",
+    "test:desktop:scroll": "node tests/desktop-scroll-smoke.mjs",
+    "dist:win": "npm run build && node scripts/distribute-win-directory.mjs && npm run release:verify:basic",
+    "artifacts:cleanup": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cleanup-build-artifacts.ps1",
+    "artifacts:cleanup:apply": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cleanup-build-artifacts.ps1 -Apply",
+    "release:verify": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/complete-release.ps1",
+    "release:verify:basic": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/complete-release.ps1 -BasicChecks"
+  },
+  "build": {
+    "appId": "app.rivu.reader",
+    "productName": "Rivu",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "dist-electron/maintenance-worker.cjs",
+      "dist-electron/startup-worker.cjs",
+      "dist-electron/feed-parse-worker.cjs",
+      "dist-electron/feed-write-worker.cjs",
+      "dist-electron/archive-export-worker.cjs",
+      "dist-electron/archive-read-worker.cjs",
+      "dist-electron/ai-scan-worker.cjs",
+      "dist-electron/entry-read-worker.cjs",
+      "dist-electron/backup-inspection-worker.cjs"
+    ],
+    "extraMetadata": {
+      "main": "dist-electron/main.cjs"
+    },
+    "win": {
+      "target": "dir",
+      "icon": "assets/rivu.ico"
+    },
+    "extraResources": [
+      {
+        "from": "assets/rivu.ico",
+        "to": "icons/rivu.ico"
+      }
+    ],
+    "extraFiles": [
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.rivu.txt"
+      },
+      {
+        "from": "NOTICE.md",
+        "to": "NOTICE.rivu.txt"
+      },
+      {
+        "from": "THIRD-PARTY-NOTICES.md",
+        "to": "THIRD-PARTY-NOTICES.txt"
+      },
+      {
+        "from": "THIRD-PARTY-LICENSES.txt",
+        "to": "THIRD-PARTY-LICENSES.txt"
+      }
+    ]
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "adm-zip": "^0.6.1",
+    "dompurify": "3.4.18",
+    "fast-xml-parser": "^5.2.5",
+    "fastify": "^5.6.0",
+    "jsdom": "^29.1.1",
+    "lucide-react": "^0.468.0",
+    "parse5": "8.0.1",
+    "postal-mime": "4.2.1",
+    "proxy-from-env": "2.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-virtuoso": "^4.14.0",
+    "rss-parser": "^3.13.0",
+    "undici": "6.29.1",
+    "yauzl": "^3.4.0",
+    "yazl": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/yauzl": "^3.4.0",
+    "@types/yazl": "^3.3.1",
+    "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^9.2.0",
+    "electron": "44.11.3",
+    "electron-builder": "^26.0.0",
+    "esbuild": "^0.25.0",
+    "playwright-core": "^1.63.0",
+    "prettier": "^3.9.9",
+    "typescript": "^5.9.0",
+    "vite": "^6.3.0",
+    "wait-on": "^8.0.0"
+  },
+  "overrides": {
+    "minimatch@>=7 <11": "11.0.1"
+  }
+}

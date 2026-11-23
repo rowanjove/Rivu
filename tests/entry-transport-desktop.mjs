@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import {mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join,relative,resolve,isAbsolute} from 'node:path';
+import {createHash} from 'node:crypto';
+import {RivuDatabase} from '../dist-server/database.cjs';
+import {_electron as electron} from 'playwright-core';
+assert.ok(process.env.RIVU_TEST_EXE);
+const directory=mkdtempSync(join(tmpdir(),'rivu-entry-bridge-')),scope=relative(resolve(tmpdir()),resolve(directory));assert.ok(scope.startsWith('rivu-entry-bridge-')&&!scope.startsWith('..')&&!isAbsolute(scope));
+const db=new RivuDatabase(join(directory,'rivu.db')),feed=db.addFeed({title:'fixture',url:'https://example.invalid/feed',fetchInterval:0}),marker='entry-bridge-large-fixture';
+db.addEntries(feed.id,[{title:'引用 "中文😀"',content:`<p>${marker}${'中文😀\n'.repeat(200000)}</p>`,description:'"\\\t\u0000',hash:'fixture'}]);const id=db.entries()[0].id,expected=JSON.parse(JSON.stringify(db.entry(id)));expected.description=Buffer.from(db.db.prepare('SELECT CAST(description AS BLOB) value FROM entries WHERE id=?').get(id).value).toString('utf8');const expectedHash=createHash('sha256').update(expected.content).digest('hex');db.close();let app;const errors=[];
+try{
+ app=await electron.launch({executablePath:process.env.RIVU_TEST_EXE,args:['--no-sandbox'],env:{...process.env,RIVU_DATA_DIR:directory}});let page;const until=Date.now()+30000;while(Date.now()<until){page=app.windows().find(w=>w.url().includes('/index.html'));if(page)break;await new Promise(resolve=>setTimeout(resolve,100));}assert.ok(page);page.on('pageerror',error=>errors.push(error.message));
+ await app.evaluate(({ipcMain},marker)=>{
+  globalThis.__entryOriginal=ipcMain._invokeHandlers.get('rivu:request');globalThis.__entryMode='normal';globalThis.__entryTransport={parses:0,serializations:0,rawReplies:0};globalThis.__entryParse=JSON.parse;globalThis.__entryStringify=JSON.stringify;
+  JSON.parse=function(value,...args){if(typeof value==='string'&&value.length>1000000&&value.includes(marker))globalThis.__entryTransport.parses++;return globalThis.__entryParse.call(this,value,...args);};JSON.stringify=function(value,...args){if(value&&typeof value==='object'&&typeof value.content==='string'&&value.content.length>1000000&&value.content.includes(marker))globalThis.__entryTransport.serializations++;return globalThis.__entryStringify.call(this,value,...args);};
+  ipcMain._invokeHandlers.set('rivu:request',async(...args)=>{if(args[1]==='GET'&&/^\/api\/entries\/[^/?]+/.test(args[2])){if(globalThis.__entryMode==='invalid-json')return {entryJson:'{broken'};if(globalThis.__entryMode==='invalid-envelope')return {unexpected:true};const value=await globalThis.__entryOriginal(...args);if(typeof value?.entryJson==='string')globalThis.__entryTransport.rawReplies++;return value;}return globalThis.__entryOriginal(...args);});
+ },marker);
+ const path=`/api/entries/${id}`;
+ const result=await page.evaluate(async path=>{window.__entryRejections=[];window.addEventListener('unhandledrejection',event=>window.__entryRejections.push(String(event.reason)));const row=await window.rivu.request('GET',path+'?fixture=true');const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(row.content)))].map(value=>value.toString(16).padStart(2,'0')).join('');return {...row,content:hash};},path);
+ assert.deepEqual(result,{...expected,content:expectedHash});assert.equal(await page.evaluate(async()=>Array.isArray(await window.rivu.request('GET','/api/entries?limit=1'))),true);assert.equal((await page.evaluate(()=>window.rivu.request('GET','/health'))).ok,true);
+ const failure=path=>page.evaluate(async path=>{try{await window.rivu.request('GET',path);return null;}catch(error){return String(error);}},path);
+ assert.match(await failure('/api/entries/missing'),/文章不存在/);
+ await app.evaluate(()=>globalThis.__entryMode='invalid-json');assert.match(await failure(path),/JSON|SyntaxError/);await app.evaluate(()=>globalThis.__entryMode='invalid-envelope');assert.match(await failure(path),/传输结果无效/);await app.evaluate(()=>globalThis.__entryMode='normal');assert.equal(await page.evaluate(async path=>(await window.rivu.request('GET',path)).id,path),id);
+ const readBefore=await app.evaluate(()=>({...globalThis.__entryTransport}));assert.equal(readBefore.parses,0);assert.equal(readBefore.serializations,0);
+ await page.evaluate(async({id,feedId})=>{const row=await window.rivu.request('PATCH',`/api/entries/${id}`,{read:true,starred:true,saved:true});if(row.id!==id||row.read!==1||row.starred!==1||row.saved!==1||!row.content.includes('entry-bridge-large-fixture'))throw Error('Invalid status receipt');await window.rivu.request('PATCH',`/api/feeds/${feedId}`,{title:'Changed source'});},{id,feedId:feed.id});
+ const mutationCounts=await app.evaluate(()=>{const counts={parses:globalThis.__entryTransport.parses,serializations:globalThis.__entryTransport.serializations};globalThis.__entryTransport.parses=0;globalThis.__entryTransport.serializations=0;return counts;});
+ assert.deepEqual(mutationCounts,{parses:0,serializations:0});
+ const state=await page.evaluate(path=>window.rivu.request('GET',path),path);assert.equal(state.read,1);assert.equal(state.starred,1);assert.equal(state.saved,1);assert.equal(state.feed_title,'Changed source');assert.equal(createHash('sha256').update(state.content).digest('hex'),expectedHash);
+ const writer=new RivuDatabase(join(directory,'rivu.db'));try{writer.db.prepare('UPDATE entries SET content=? WHERE id=?').run('Changed body 中文😀',id);}finally{writer.close();}
+ const changed=await page.evaluate(path=>window.rivu.request('GET',path),path);assert.equal(changed.content,'Changed body 中文😀');assert.notEqual(changed.body_revision,expected.body_revision);
+ const metrics=await app.evaluate(()=>globalThis.__entryTransport);assert.equal(metrics.parses,0);assert.equal(metrics.serializations,0);assert.equal(metrics.rawReplies,4);assert.deepEqual(await page.evaluate(()=>window.__entryRejections),[]);assert.deepEqual(errors,[]);console.log(JSON.stringify({fullFieldsAndBodyHash:true,queryString:true,otherApisPreserved:true,missingError:true,protocolFailuresRecovered:true,stateSourceAndBodyInvalidation:true,detailReadMetrics:metrics,mutationCounts,errors}));
+}finally{if(app){await app.evaluate(({ipcMain})=>{if(globalThis.__entryOriginal)ipcMain._invokeHandlers.set('rivu:request',globalThis.__entryOriginal);if(globalThis.__entryParse)JSON.parse=globalThis.__entryParse;if(globalThis.__entryStringify)JSON.stringify=globalThis.__entryStringify;}).catch(()=>{});await app.close();}rmSync(directory,{recursive:true,force:true});}

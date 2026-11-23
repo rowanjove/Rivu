@@ -1,0 +1,60 @@
+.source-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex: none;
+  border-radius: var(--radius-sm, 6px);
+}
+.source-icon-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-subtle, #e6f0f8);
+  color: var(--accent-text, #165a8c);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.feed-nav .source-icon,
+.entry-row-top .source-icon {
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+.feed-preview-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.feed-preview-heading h3 {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.feed-preview-address {
+  overflow-wrap: anywhere;
+  font-size: calc(12px * var(--ui-font-scale));
+  line-height: 1.55;
+  color: var(--ink-muted);
+  margin: 4px 0;
+}
+.feed-preview-frequency,
+.feed-preview-category {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  font-size: calc(13px * var(--ui-font-scale));
+  color: var(--ink-secondary);
+}
+.feed-preview-frequency select,
+.feed-preview-category select {
+  flex: 1;
+  min-width: 0;
+}
+.source-icon-shell {
+  display: inline-flex;
+  flex: none;
+  line-height: 0;
+}

@@ -1,0 +1,88 @@
+# Dependencies and generated builds
+node_modules/
+dist/
+dist-electron/
+dist-server/
+release/
+release-*/
+release-directory-*/
+build-stage-*/
+
+# User data, test data, and reports
+artifacts/
+bench-data/
+coverage/
+playwright-report/
+test-results/
+_archive/
+/NVIDIA Corporation/
+*.log
+/*.exit.json
+*.db*
+*.sqlite*
+*.wal
+*.shm
+*.trace
+
+# Generated build identity
+/shared/build-info.json
+/artifacts-production-license-inventory.json
+/*.exit*.json
+/*-exit*.json
+/*-exits*.json
+*.tsbuildinfo
+
+# Keep only release and test-support scripts in the public repository.
+/scripts/*
+!/scripts/create-build-info.mjs
+!/scripts/distribute-win-directory.mjs
+!/scripts/package-directory.mjs
+!/scripts/complete-release.ps1
+!/scripts/cleanup-build-artifacts.ps1
+!/scripts/analyze-native-image-trace.mjs
+!/scripts/analyze-restore-renderer-trace.mjs
+!/scripts/audit-relaunched-restore.mjs
+!/scripts/bitmap-stage-diagnostics.mjs
+!/scripts/bounded-renderer-trace.mjs
+!/scripts/native-image-writer-desktop-smoke.mjs
+
+# Packages and temporary files
+*.zip
+*.asar
+*.exe
+*.dll
+*.pdb
+*.node
+*.tmp
+*.bak
+*.old
+
+# Local secrets and machine-specific settings
+.env
+.env.*
+!.env.example
+settings.json
+*.local
+*.pem
+*.p12
+*.pfx
+*.key
+
+# Internal project documents stay local by default. Public docs are explicit.
+/*.md
+!/README.md
+!/README_EN.md
+!/NOTICE.md
+!/THIRD-PARTY-NOTICES.md
+
+# Public screenshots are allowlisted; keep generated UI test captures local.
+/docs/images/*.png
+!/docs/images/rivu-empty-library.png
+!/docs/images/rivu-timeline.png
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

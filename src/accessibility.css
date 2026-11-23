@@ -1,0 +1,65 @@
+/* Unified settings fields, focus indicators, and motion accessibility */
+
+.settings-dialog :is(input, select, textarea):not([type="checkbox"], [type="radio"], [type="hidden"]) {
+  min-width: 0;
+  border: 1px solid var(--settings-field-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--settings-field-bg);
+  color: var(--settings-field-ink);
+  font-family: inherit;
+  font-size: calc(13px * var(--ui-font-scale));
+}
+.settings-dialog :is(input, select, textarea):disabled:not([type="checkbox"], [type="radio"], [type="hidden"]) {
+  background: var(--settings-field-disabled-bg);
+  color: var(--settings-field-disabled-ink);
+  cursor: not-allowed;
+}
+.settings-dialog input::placeholder,
+.settings-dialog textarea::placeholder {
+  color: var(--ink-muted);
+  opacity: 1;
+}
+
+.feed-setting .feed-setting-notice {
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+}
+
+:is(button, a[href], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.settings-navigation button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.settings-dialog input[type="date"]:focus-within {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.dialog,
+.settings-dialog {
+  animation: rivu-dialog-appear 120ms ease-out;
+}
+@keyframes rivu-dialog-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 600px) {
+  .source-tabs {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

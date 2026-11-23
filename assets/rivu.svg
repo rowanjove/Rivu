@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Rivu 信息流图标">
+  <rect width="512" height="512" rx="140" fill="#EAF6FF"/>
+  <g transform="rotate(-20 256 256)">
+    <rect x="164" y="151" width="46" height="210" rx="23" fill="#2F9EF4"/>
+    <rect x="233" y="116" width="46" height="280" rx="23" fill="#65C1FA"/>
+    <rect x="302" y="171" width="46" height="170" rx="23" fill="#9EDCFF"/>
+  </g>
+</svg>

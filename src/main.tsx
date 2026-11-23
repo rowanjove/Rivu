@@ -1,0 +1,10 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { App } from './App';
+import './styles.css';
+import './ai.css';
+import './v02.css';
+import './reading.css';
+import './accessibility.css';
+import './pane-layout.css';
+createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
