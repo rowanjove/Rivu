@@ -4,7 +4,7 @@
 
 # Rivu
 
-**A local-first desktop RSS reader for Windows**
+**An offline desktop RSS reader for Windows**
 
 Your feeds, articles, offline assets, and reading state stay on your device by default — no account required and no cloud lock-in.
 
